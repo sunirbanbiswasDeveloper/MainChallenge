@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MindZen - Empathetic Student Wellness Companion</title>
+  <meta name="description" content="MindZen is a digital wellness companion for students preparing for high-stakes exams. Log your mood, analyze journals, practice breathing, and manage stress.">
+  
+  <!-- Premium Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Local Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+  <!-- Toast Notification System -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Crisis Banner Overlay (Hidden by Default) -->
+  <div id="crisis-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="crisis-title">
+    <div class="modal-content glass-card">
+      <div class="modal-header">
+        <h2 id="crisis-title"><i class="fa-solid fa-hand-holding-heart text-accent-rose"></i> You're Not Alone</h2>
+        <button class="btn-close-modal" id="close-crisis-modal" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>We noticed you are going through a highly stressful moment. Please remember that your health and well-being are far more important than any exam. There are people who care and want to help you through this.</p>
+        
+        <div class="helpline-group">
+          <h3><i class="fa-solid fa-phone"></i> Free & Confidential Helplines</h3>
+          <ul class="helpline-list">
+            <li>
+              <strong>Tele-MANAS (India):</strong> 
+              <span class="phone-num">14416</span> or <span class="phone-num">1800-891-4416</span> (24/7)
+            </li>
+            <li>
+              <strong>Kiran Mental Health Helpline:</strong> 
+              <span class="phone-num">1800-599-0019</span> (24/7)
+            </li>
+            <li>
+              <strong>Vandrevala Foundation:</strong> 
+              <span class="phone-num">+91 9999 666 555</span> (24/7)
+            </li>
+            <li>
+              <strong>AASRA:</strong> 
+              <span class="phone-num">+91-9820466726</span> (24/7)
+            </li>
+          </ul>
+        </div>
+        <p class="modal-note">Please consider reaching out to a family member, friend, or a professional advisor. You have a bright future, and this obstacle is just a small chapter.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary" id="crisis-ok-btn">Understood, I will take care</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- App Wrapper -->
+  <div id="app-container">
+
+    <!-- 1. LOGIN SCREEN -->
+    <section id="login-screen" class="login-wrapper">
+      <div class="login-background-elements">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+      </div>
+      <div class="login-card glass-card">
+        <div class="login-header">
+          <div class="logo-area">
+            <span class="logo-icon"><i class="fa-solid fa-feather-pointed"></i></span>
+            <span class="logo-text">MindZen</span>
+          </div>
+          <h1>Empathetic Wellness Companion</h1>
+          <p>Your sanctuary during competitive & board exam prep.</p>
+        </div>
+        
+        <form id="login-form">
+          <div class="form-group">
+            <label for="username"><i class="fa-regular fa-user"></i> User ID</label>
+            <input type="text" id="username" placeholder="Enter User ID" required autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label for="password"><i class="fa-solid fa-lock"></i> Password</label>
+            <div class="password-wrapper">
+              <input type="password" id="password" placeholder="Enter Password" required autocomplete="current-password">
+              <button type="button" id="toggle-password-visibility" aria-label="Toggle Password Visibility">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          <button type="submit" class="btn-primary btn-block" id="login-submit-btn">
+            Enter Sanctuary <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </form>
+        
+        <div class="login-footer">
+          <p>Mock login ID: <code>Sunirban</code> / <code>SampleAI</code></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. MAIN APPLICATION WORKSPACE -->
+    <main id="main-workspace" class="hidden">
+      <!-- SIDEBAR NAVIGATION -->
+      <aside class="sidebar glass-card">
+        <div class="sidebar-brand">
+          <span class="logo-icon"><i class="fa-solid fa-feather-pointed"></i></span>
+          <span class="logo-text">MindZen</span>
+        </div>
+
+        <div class="student-profile-summary">
+          <div class="avatar-ring">
+            <i class="fa-solid fa-user-graduate"></i>
+          </div>
+          <div class="profile-info">
+            <h4 id="user-display-name">Sunirban</h4>
+            <span id="user-exam-badge">UPSC Aspirant</span>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav">
+          <button class="nav-btn active" data-target="view-dashboard" aria-label="Dashboard">
+            <i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span>
+          </button>
+          <button class="nav-btn" data-target="view-companion" aria-label="Aura Chat Companion">
+            <i class="fa-solid fa-sparkles"></i> <span>Aura Companion</span>
+          </button>
+          <button class="nav-btn" data-target="view-mindfulness" aria-label="Mindfulness & Breathing">
+            <i class="fa-solid fa-wind"></i> <span>Breathing & Sound</span>
+          </button>
+          <button class="nav-btn" data-target="view-analytics" aria-label="Weekly Insights">
+            <i class="fa-solid fa-chart-line"></i> <span>Analytics & Badges</span>
+          </button>
+          <button class="nav-btn" data-target="view-settings" aria-label="Settings">
+            <i class="fa-solid fa-sliders"></i> <span>Settings</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <button id="logout-btn" class="btn-secondary btn-block">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> <span>Leave App</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- VIEW PANELS CONTAINER -->
+      <div class="content-wrapper">
+        <header class="top-bar">
+          <div class="greeting-section">
+            <h2 id="page-title">Peaceful Day, Sunirban</h2>
+            <p id="top-bar-motivation">Remember: You are defined by your character, not just your grades.</p>
+          </div>
+          <div class="quick-stats-row">
+            <div class="stat-badge" id="streak-counter" title="Days log streak">
+              <i class="fa-solid fa-fire text-accent-amber"></i>
+              <span class="stat-label">Streak:</span>
+              <strong class="stat-val" id="streak-count-val">0 days</strong>
+            </div>
+            <button id="quick-crisis-btn" class="btn-crisis" aria-label="Crisis Support Resources">
+              <i class="fa-solid fa-shield-halved"></i> Help Helplines
+            </button>
+          </div>
+        </header>
+
+        <!-- A. DASHBOARD PANEL -->
+        <section id="view-dashboard" class="view-panel active">
+          <div class="panel-layout grid-2-1">
+            <!-- Left Side: Mood Logger & Journal Input -->
+            <div class="column-left">
+              <!-- Exam Config Card -->
+              <div class="glass-card card-exam-settings p-20">
+                <h3><i class="fa-solid fa-circle-question text-accent-indigo"></i> Preparation Context</h3>
+                <p class="subtitle">Tell Aura about your current preparation stage so she can customize your motivational prompts.</p>
+                <div class="exam-selectors">
+                  <div class="select-group">
+                    <label for="exam-type">Active Exam</label>
+                    <select id="exam-type">
+                      <option value="JEE">JEE (Engineering)</option>
+                      <option value="NEET">NEET (Medical)</option>
+                      <option value="UPSC">UPSC (Civil Services)</option>
+                      <option value="GATE">GATE (Post-grad Tech)</option>
+                      <option value="CAT">CAT (Management)</option>
+                      <option value="CUET">CUET (Undergrad Boards)</option>
+                      <option value="Board Exams">Class X/XII Boards</option>
+                      <option value="Other">Other Competitive Exam</option>
+                    </select>
+                  </div>
+                  <div class="select-group">
+                    <label for="prep-stage">Current Stage</label>
+                    <select id="prep-stage">
+                      <option value="Early Prep">Early Stage Syllabus Building</option>
+                      <option value="Mid Prep">Mid-way / Standard Prep</option>
+                      <option value="Revision Phase">Intense Revision & Formula Recalls</option>
+                      <option value="Mock Phase">Mock Tests & Sample Papers</option>
+                      <option value="Last Stretch">Days before the Exam</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mood Logger Card -->
+              <div class="glass-card mood-logger-card p-20 mt-20">
+                <h3>How are you feeling right now?</h3>
+                <p class="subtitle">Select your dominant emotional state. Your streak updates when you log mood or write journals.</p>
+                
+                <div class="mood-emojis-container">
+                  <button class="mood-btn" data-mood="calm" title="Calm & Content">
+                    <span class="emoji">🧘</span>
+                    <span class="label">Calm</span>
+                  </button>
+                  <button class="mood-btn" data-mood="excited" title="Energetic & Confident">
+                    <span class="emoji">⚡</span>
+                    <span class="label">Focused</span>
+                  </button>
+                  <button class="mood-btn" data-mood="tired" title="Exhausted / Sleepy">
+                    <span class="emoji">🥱</span>
+                    <span class="label">Exhausted</span>
+                  </button>
+                  <button class="mood-btn" data-mood="stressed" title="Pressure / Tense">
+                    <span class="emoji">😟</span>
+                    <span class="label">Stressed</span>
+                  </button>
+                  <button class="mood-btn" data-mood="anxious" title="Nervous / Worried">
+                    <span class="emoji">😰</span>
+                    <span class="label">Anxious</span>
+                  </button>
+                  <button class="mood-btn" data-mood="burntout" title="Overwhelmed / Empty">
+                    <span class="emoji">🥀</span>
+                    <span class="label">Overwhelmed</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Daily Journaling Area -->
+              <div class="glass-card journal-card p-20 mt-20">
+                <div class="card-header-actions">
+                  <h3>Daily Journal & Prep Log</h3>
+                  <span class="word-indicator" id="journal-word-count">0 words</span>
+                </div>
+                <p class="subtitle">Write down your progress, self-talk, or sleep details. Aura's analytics scan this text for deep fatigue, anxiety, and imposter syndrome markers.</p>
+                
+                <textarea id="journal-input" placeholder="Type here. E.g., 'Woke up at 3am. Tried doing mechanics questions but blanked out. Everyone in coachings seems way ahead of me. Back is stiff, eyes hurt...'" aria-label="Journal logs text area"></textarea>
+                
+                <div class="card-footer-actions">
+                  <button class="btn-secondary" id="clear-journal-btn"><i class="fa-solid fa-trash-can"></i> Clear</button>
+                  <button class="btn-primary" id="analyze-journal-btn"><i class="fa-solid fa-brain"></i> Analyze Well-being</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Side: Stress Analyzer & Insights -->
+            <div class="column-right">
+              <!-- Stress Assessment Card -->
+              <div class="glass-card stress-assessment-card p-20 text-center">
+                <h3>Stress & Burnout Indicator</h3>
+                
+                <!-- Visual Ring Indicator -->
+                <div class="gauge-wrapper">
+                  <div class="gauge">
+                    <svg viewBox="0 0 100 100" class="gauge-svg">
+                      <circle cx="50" cy="50" r="42" class="gauge-track"></circle>
+                      <circle cx="50" cy="50" r="42" class="gauge-fill" id="stress-gauge-fill"></circle>
+                    </svg>
+                    <div class="gauge-label-box">
+                      <span id="burnout-percentage-val">0%</span>
+                      <span class="label-txt">Burnout Risk</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <h4 id="stress-status-title">Status: Balanced</h4>
+                <p id="stress-status-desc" class="p-10 text-small">Write a journal entry to assess your mental metrics and uncover potential hidden fatigue patterns.</p>
+              </div>
+
+              <!-- Hidden Stressors Detected -->
+              <div class="glass-card stressors-detected-card p-20 mt-20">
+                <h3>Hidden Stress Elements</h3>
+                <p class="subtitle text-small">Analyzed categories missing in standard metrics:</p>
+                
+                <div class="stress-bar-list">
+                  <div class="stress-bar-item">
+                    <div class="bar-info">
+                      <span>Sleep & Physical fatigue</span>
+                      <span id="val-fatigue">0%</span>
+                    </div>
+                    <div class="progress-bar-track"><div class="progress-bar-fill bg-coral" id="fill-fatigue" style="width: 0%"></div></div>
+                  </div>
+                  <div class="stress-bar-item">
+                    <div class="bar-info">
+                      <span>Imposter Syndrome / Perfectionism</span>
+                      <span id="val-imposter">0%</span>
+                    </div>
+                    <div class="progress-bar-track"><div class="progress-bar-fill bg-indigo" id="fill-imposter" style="width: 0%"></div></div>
+                  </div>
+                  <div class="stress-bar-item">
+                    <div class="bar-info">
+                      <span>Test & Syllabus Anxiety</span>
+                      <span id="val-anxiety">0%</span>
+                    </div>
+                    <div class="progress-bar-track"><div class="progress-bar-fill bg-amber" id="fill-anxiety" style="width: 0%"></div></div>
+                  </div>
+                  <div class="stress-bar-item">
+                    <div class="bar-info">
+                      <span>Social Pressure / Isolation</span>
+                      <span id="val-pressure">0%</span>
+                    </div>
+                    <div class="progress-bar-track"><div class="progress-bar-fill bg-sage" id="fill-pressure" style="width: 0%"></div></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Coping Recommendations Panel -->
+              <div class="glass-card recommendations-card p-20 mt-20" id="rec-card">
+                <h3>Immediate Recommendations</h3>
+                <div id="recommendations-container">
+                  <div class="empty-rec-state">
+                    <p class="text-small"><i class="fa-solid fa-heart-pulse"></i> recommendations will populate here based on your mood logs and daily written journals.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- B. COMPANION CHAT PANEL -->
+        <section id="view-companion" class="view-panel">
+          <div class="chat-container glass-card">
+            <div class="chat-header">
+              <div class="companion-avatar">
+                <i class="fa-solid fa-compass-drafting"></i>
+                <span class="glow-indicator"></span>
+              </div>
+              <div class="companion-details">
+                <h3>Aura</h3>
+                <span class="status-subtitle">Empathetic Digital Wellness Advisor</span>
+              </div>
+            </div>
+
+            <!-- Chat Scroll Area -->
+            <div class="chat-messages-scroll" id="chat-messages-area" role="log" aria-label="Conversation with Aura">
+              <!-- Simulated starting message -->
+              <div class="message aura-msg">
+                <div class="msg-bubble">
+                  Hello Sunirban! I'm Aura, your wellness space. Preparation for your exam can be exhausting, and it is natural to feel stressed. You can share your worries, talk about mock papers, or ask for a quick relaxation breathing guide.
+                </div>
+                <span class="msg-time">12:12 PM</span>
+              </div>
+            </div>
+
+            <!-- Suggestion Prompts -->
+            <div class="chat-suggestions">
+              <button class="chat-suggestion-chip" data-prompt="I need a quick breathing exercise.">
+                🧘 Box Breath Exercise
+              </button>
+              <button class="chat-suggestion-chip" data-prompt="I am feeling overwhelmed with exam revision.">
+                📚 Revision Overwhelm
+              </button>
+              <button class="chat-suggestion-chip" data-prompt="What are some stress tips for mock test fatigue?">
+                ✍️ Mock Test stress
+              </button>
+              <button class="chat-suggestion-chip" data-prompt="I feel like I'm falling behind others.">
+                🤝 Self-Doubt Support
+              </button>
+            </div>
+
+            <!-- Input Area -->
+            <div class="chat-input-bar">
+              <input type="text" id="chat-input-field" placeholder="Ask Aura anything or talk about your day..." aria-label="Message Aura text input">
+              <button class="btn-circle" id="chat-send-btn" aria-label="Send message">
+                <i class="fa-solid fa-paper-plane"></i>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- C. MINDFULNESS & BREATHING PANEL -->
+        <section id="view-mindfulness" class="view-panel">
+          <div class="panel-layout grid-2-1">
+            <!-- Box Breathing Guided Sphere -->
+            <div class="column-left">
+              <div class="glass-card breathing-card p-20 text-center">
+                <h3>Interactive Guided Breathing</h3>
+                <p class="subtitle mb-20">Follow the visual ring to balance your nervous system.</p>
+
+                <!-- Pace selector -->
+                <div class="breathing-type-selectors mb-20">
+                  <button class="btn-toggle active" data-pace="box">Box Breathing (4-4-4-4)</button>
+                  <button class="btn-toggle" data-pace="relax">Relaxation (4-7-8)</button>
+                  <button class="btn-toggle" data-pace="equal">Equal Breathing (4-4)</button>
+                </div>
+
+                <!-- Animated Sphere -->
+                <div class="breathing-animation-container">
+                  <div class="breath-ring-outer" id="breath-ring-outer"></div>
+                  <div class="breath-sphere" id="breath-sphere">
+                    <span id="breath-state-text">Ready</span>
+                    <span id="breath-timer">0</span>
+                  </div>
+                </div>
+
+                <!-- Timer / Control actions -->
+                <div class="breathing-controls mt-20">
+                  <button class="btn-primary" id="btn-breathing-control">
+                    <i class="fa-solid fa-play"></i> Start Breathing Session
+                  </button>
+                </div>
+
+                <!-- Narrator Option -->
+                <div class="meditation-option p-15 mt-20">
+                  <label class="custom-checkbox">
+                    <input type="checkbox" id="breathing-voice-toggle">
+                    <span class="checkmark"></span>
+                    Enable voice guidance narrator (uses Speech Synthesis)
+                  </label>
+                </div>
+              </div>
+
+              <!-- 5-4-3-2-1 Grounding Reset -->
+              <div class="glass-card grounding-card p-20 mt-20">
+                <h3>5-4-3-2-1 Sensory Grounding Reset</h3>
+                <p class="subtitle mb-20">Use this focus tool to reset exam anxiety, ground your mind, and clear panic symptoms.</p>
+                
+                <div class="grounding-wizard">
+                  <div class="grounding-step active" id="grounding-step-1">
+                    <div class="step-num">5</div>
+                    <h4>Things you can SEE</h4>
+                    <p>Observe your space. Write 5 visual elements around you:</p>
+                    <div class="grounding-inputs-grid">
+                      <input type="text" class="gr-input" placeholder="1. I see..." required>
+                      <input type="text" class="gr-input" placeholder="2. I see..." required>
+                      <input type="text" class="gr-input" placeholder="3. I see..." required>
+                      <input type="text" class="gr-input" placeholder="4. I see..." required>
+                      <input type="text" class="gr-input" placeholder="5. I see..." required>
+                    </div>
+                    <button class="btn-secondary btn-next-step" data-next="2" disabled>Next Step</button>
+                  </div>
+                  <div class="grounding-step" id="grounding-step-2">
+                    <div class="step-num">4</div>
+                    <h4>Things you can TOUCH / FEEL</h4>
+                    <p>Focus on your body. Write 4 physical sensations you feel (e.g. key texture, chair pressure):</p>
+                    <div class="grounding-inputs-grid">
+                      <input type="text" class="gr-input" placeholder="1. I feel..." required>
+                      <input type="text" class="gr-input" placeholder="2. I feel..." required>
+                      <input type="text" class="gr-input" placeholder="3. I feel..." required>
+                      <input type="text" class="gr-input" placeholder="4. I feel..." required>
+                    </div>
+                    <button class="btn-secondary btn-next-step" data-next="3" disabled>Next Step</button>
+                  </div>
+                  <div class="grounding-step" id="grounding-step-3">
+                    <div class="step-num">3</div>
+                    <h4>Things you can HEAR</h4>
+                    <p>Close your eyes briefly. Write 3 ambient sounds you hear:</p>
+                    <div class="grounding-inputs-grid">
+                      <input type="text" class="gr-input" placeholder="1. I hear..." required>
+                      <input type="text" class="gr-input" placeholder="2. I hear..." required>
+                      <input type="text" class="gr-input" placeholder="3. I hear..." required>
+                    </div>
+                    <button class="btn-secondary btn-next-step" data-next="4" disabled>Next Step</button>
+                  </div>
+                  <div class="grounding-step" id="grounding-step-4">
+                    <div class="step-num">2</div>
+                    <h4>Things you can SMELL</h4>
+                    <p>Inhale slowly. Write 2 scents you can identify:</p>
+                    <div class="grounding-inputs-grid">
+                      <input type="text" class="gr-input" placeholder="1. I smell..." required>
+                      <input type="text" class="gr-input" placeholder="2. I smell..." required>
+                    </div>
+                    <button class="btn-secondary btn-next-step" data-next="5" disabled>Next Step</button>
+                  </div>
+                  <div class="grounding-step" id="grounding-step-5">
+                    <div class="step-num">1</div>
+                    <h4>Thing you can TASTE</h4>
+                    <p>Focus on your palette. Write 1 taste you experience:</p>
+                    <div class="grounding-inputs-grid">
+                      <input type="text" class="gr-input" placeholder="1. I taste..." required>
+                    </div>
+                    <button class="btn-primary" id="btn-finish-grounding" disabled>Grounding Completed</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Side: Web Audio Ambient Synth -->
+            <div class="column-right">
+              <div class="glass-card soundscapes-card p-20 text-center">
+                <h3>Ambient Soundscapes</h3>
+                <p class="subtitle">Real-time synthesizer using Web Audio API to help shield you from distractions.</p>
+                
+                <div class="soundscape-tracks-grid mt-20">
+                  <div class="track-card" id="track-binaural">
+                    <i class="fa-solid fa-wave-square"></i>
+                    <h4>Binaural Focus</h4>
+                    <span class="desc">140Hz / 144Hz Delta wave flow</span>
+                    <button class="btn-play-synth" data-synth="binaural" aria-label="Toggle Binaural Focus audio"><i class="fa-solid fa-play"></i> Play</button>
+                  </div>
+                  <div class="track-card" id="track-rain">
+                    <i class="fa-solid fa-cloud-showers-heavy"></i>
+                    <h4>Gentle Rain</h4>
+                    <span class="desc">Synthetic rain hiss frequencies</span>
+                    <button class="btn-play-synth" data-synth="rain" aria-label="Toggle Gentle Rain audio"><i class="fa-solid fa-play"></i> Play</button>
+                  </div>
+                  <div class="track-card" id="track-brownian">
+                    <i class="fa-solid fa-mountain"></i>
+                    <h4>Deep Brown Noise</h4>
+                    <span class="desc">Low-frequency rumble focus barrier</span>
+                    <button class="btn-play-synth" data-synth="brown" aria-label="Toggle Deep Brown Noise audio"><i class="fa-solid fa-play"></i> Play</button>
+                  </div>
+                </div>
+
+                <!-- Live Audio Visualizer Canvas -->
+                <div class="visualizer-wrapper mt-20">
+                  <canvas id="audio-visualizer-canvas" width="300" height="70"></canvas>
+                </div>
+
+                <!-- Synth Controls -->
+                <div class="synth-sliders mt-20">
+                  <div class="slider-group">
+                    <label for="synth-volume">Master Volume</label>
+                    <input type="range" id="synth-volume" min="0" max="1" step="0.05" value="0.5">
+                    <span id="volume-val-display">50%</span>
+                  </div>
+                  <div class="slider-group">
+                    <label for="rain-intensity">Rain Filter Frequency</label>
+                    <input type="range" id="rain-intensity" min="100" max="2500" step="50" value="800">
+                  </div>
+                </div>
+                <div class="text-small mt-10 text-sage"><i class="fa-solid fa-circle-info"></i> Audio is synthesized directly inside your browser without loading external files, preserving offline efficiency and user privacy.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- D. WEEKLY INSIGHTS & ANALYTICS PANEL -->
+        <section id="view-analytics" class="view-panel">
+          <!-- Stats Top Rows -->
+          <div class="analytics-top-badges">
+            <div class="glass-card analytic-stat-box p-20 text-center">
+              <i class="fa-solid fa-calendar-check text-accent-indigo text-large"></i>
+              <h4>Total Entries logged</h4>
+              <p class="huge-txt" id="stat-total-entries">0</p>
+            </div>
+            <div class="glass-card analytic-stat-box p-20 text-center">
+              <i class="fa-solid fa-seedling text-accent-sage text-large"></i>
+              <h4>Dominant State</h4>
+              <p class="huge-txt" id="stat-dominant-mood">None</p>
+            </div>
+            <div class="glass-card analytic-stat-box p-20 text-center">
+              <i class="fa-solid fa-hourglass-half text-accent-amber text-large"></i>
+              <h4>Avg. Burnout Risk</h4>
+              <p class="huge-txt" id="stat-avg-burnout">0%</p>
+            </div>
+          </div>
+
+          <!-- Charts and Trends -->
+          <div class="panel-layout grid-2-1 mt-20">
+            <div class="column-left">
+              <!-- Weekly Trend Graph SVG -->
+              <div class="glass-card weekly-chart-card p-20">
+                <h3>Weekly Mood & Stress Level</h3>
+                <p class="subtitle mb-20">Your recorded stress fluctuation over the last 7 logged entries.</p>
+                <div class="chart-container-svg" id="weekly-mood-chart-area">
+                  <!-- Custom responsive SVG charts rendered here -->
+                  <svg id="svg-weekly-chart" viewBox="0 0 500 200" width="100%" height="200" aria-label="Line graph tracking student stress level over 7 entries.">
+                    <line x1="40" y1="20" x2="40" y2="170" stroke="rgba(255,255,255,0.2)" stroke-width="2"></line>
+                    <line x1="40" y1="170" x2="480" y2="170" stroke="rgba(255,255,255,0.2)" stroke-width="2"></line>
+                    <!-- Y Axis Labels -->
+                    <text x="15" y="25" fill="rgba(255,255,255,0.5)" font-size="10">High</text>
+                    <text x="15" y="95" fill="rgba(255,255,255,0.5)" font-size="10">Med</text>
+                    <text x="15" y="165" fill="rgba(255,255,255,0.5)" font-size="10">Low</text>
+                    <!-- No Data State placeholder -->
+                    <text x="250" y="100" fill="rgba(255,255,255,0.4)" font-size="14" text-anchor="middle" id="svg-chart-placeholder-text">Log mood entries to populate history</text>
+                    <path d="" fill="none" stroke="var(--color-primary)" stroke-width="3" id="svg-chart-line" class="hidden"></path>
+                    <g id="svg-chart-points"></g>
+                  </svg>
+                </div>
+              </div>
+
+              <!-- Unlocked Badges Panel -->
+              <div class="glass-card badges-unlocked-card p-20 mt-20">
+                <h3>Wellness Milestone Badges</h3>
+                <p class="subtitle">Celebrate your small emotional victories. Consistency is key to beating exam anxiety.</p>
+                <div class="badges-flex-container mt-20">
+                  <div class="badge-item locked" id="badge-first-step" title="Log your first mood entry.">
+                    <div class="badge-icon"><i class="fa-solid fa-shoe-prints"></i></div>
+                    <h4>First Step</h4>
+                    <span class="badge-desc">Logged 1 entry</span>
+                  </div>
+                  <div class="badge-item locked" id="badge-mindful-breather" title="Complete at least one box breathing session.">
+                    <div class="badge-icon"><i class="fa-solid fa-lungs"></i></div>
+                    <h4>Zen Breather</h4>
+                    <span class="badge-desc">Mindful Breath</span>
+                  </div>
+                  <div class="badge-item locked" id="badge-consistency" title="Achieve a streak of 3 consecutive logging entries.">
+                    <div class="badge-icon"><i class="fa-solid fa-award"></i></div>
+                    <h4>Streak Star</h4>
+                    <span class="badge-desc">3 Day Log Streak</span>
+                  </div>
+                  <div class="badge-item locked" id="badge-courageous" title="Identify Imposter Syndrome and review recommendations.">
+                    <div class="badge-icon"><i class="fa-solid fa-shield"></i></div>
+                    <h4>Imposter Shield</h4>
+                    <span class="badge-desc">Confronted Doubt</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Saved logs list -->
+            <div class="column-right">
+              <div class="glass-card past-journals-list-card p-20">
+                <div class="card-header-actions">
+                  <h3>Journal History</h3>
+                  <button class="btn-link" id="btn-clear-history-all" title="Purge all records from local storage.">Clear All</button>
+                </div>
+                <div id="journal-history-list" class="journal-history-list">
+                  <!-- Populated dynamically -->
+                  <div class="empty-list-state">
+                    <p class="text-small text-center"><i class="fa-regular fa-folder-open"></i> No logged journals yet.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- E. SETTINGS & HELP PANEL -->
+        <section id="view-settings" class="view-panel">
+          <div class="glass-card settings-wrapper p-25">
+            <h2>System Preferences & Privacy Controls</h2>
+            <p class="subtitle mb-20">Tweak accessibility, adjust speech synthesizers, and manage local storage privacy.</p>
+
+            <div class="settings-divider"></div>
+
+            <!-- Privacy Section -->
+            <div class="settings-section">
+              <h3><i class="fa-solid fa-user-shield text-accent-sage"></i> Data Privacy & Masking</h3>
+              <div class="setting-item">
+                <div class="setting-info">
+                  <h4>Anonymization Mode</h4>
+                  <p class="text-small">Masks names in UI and saves data without referencing student identifiers. Critical for shared computers or high-security logins.</p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="setting-anonymize">
+                  <span class="slider-round"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="settings-divider"></div>
+
+            <!-- Accessibility Settings -->
+            <div class="settings-section">
+              <h3><i class="fa-solid fa-universal-access text-accent-indigo"></i> Accessibility & UI Scaling</h3>
+              <div class="setting-item">
+                <div class="setting-info">
+                  <h4>Narrate Coping Responses (TTS)</h4>
+                  <p class="text-small">Auto-speak Aura's suggestions and exercises out loud, allowing you to close your eyes and rest.</p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="setting-tts-enabled" checked>
+                  <span class="slider-round"></span>
+                </label>
+              </div>
+              <div class="setting-item flex-column">
+                <div class="setting-info full-width">
+                  <h4>Voice Speaking Rate (Speed)</h4>
+                </div>
+                <div class="slider-with-label full-width mt-10">
+                  <input type="range" id="setting-tts-speed" min="0.5" max="2" step="0.1" value="1">
+                  <span id="tts-speed-val">1.0x</span>
+                </div>
+              </div>
+              <div class="setting-item flex-column">
+                <div class="setting-info full-width">
+                  <h4>Text Zoom Scale</h4>
+                </div>
+                <div class="slider-with-label full-width mt-10">
+                  <input type="range" id="setting-font-scaler" min="12" max="22" step="1" value="16">
+                  <span id="font-scale-val">16px</span>
+                </div>
+              </div>
+              <div class="setting-item">
+                <div class="setting-info">
+                  <h4>High Contrast Mode</h4>
+                  <p class="text-small">Increases text contrast ratios for students with low vision conditions.</p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="setting-high-contrast">
+                  <span class="slider-round"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="settings-divider"></div>
+
+            <!-- Dangerous Area -->
+            <div class="settings-section">
+              <h3><i class="fa-solid fa-triangle-exclamation text-accent-coral"></i> Storage Management</h3>
+              <div class="setting-item">
+                <div class="setting-info">
+                  <h4>Purge All Memory</h4>
+                  <p class="text-small">This deletes all logged mood tracks, streaks, badges, and journals permanently from your local browser workspace storage.</p>
+                </div>
+                <button class="btn-danger" id="btn-purge-storage">Delete All Data</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- Local Script files -->
+  <script src="app.js"></script>
+</body>
+</html>
