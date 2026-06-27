@@ -12,13 +12,13 @@ const CONFIG = {
   MOCK_PASS: 'SampleAI',
   KEYWORDS: {
     fatigue: [
-      'sleep', 'tired', 'exhausted', 'fatigue', 'insomnia', 'awake', 'nightmare', 
+      'sleep', 'tired', 'exhausted', 'fatigue', 'insomnia', 'awake', 'nightmare',
       'restless', 'sleepiness', 'headache', 'dizzy', 'strain', 'back pain', 'eyes hurt',
       'stiff', 'neck', 'rest', 'weak', 'drained', 'no energy', 'yawn'
     ],
     imposter: [
       'fail', 'not good enough', 'stupid', 'useless', 'fraud', 'behind', 'better than me',
-      'smarter', 'talentless', 'worthless', 'disappointing', 'give up', 'hopeless', 
+      'smarter', 'talentless', 'worthless', 'disappointing', 'give up', 'hopeless',
       'everyone else', 'never pass', 'impossible', 'dumb', 'loser', 'blame'
     ],
     anxiety: [
@@ -27,8 +27,8 @@ const CONFIG = {
       'timer', 'exam pressure', 'worry', 'scared', 'pre-exam', 'preparation'
     ],
     pressure: [
-      'parents', 'coaching', 'expectations', 'isolate', 'alone', 'father', 'mother', 
-      'teacher', 'society', 'comparisons', 'relative', 'peer pressure', 'lonely', 
+      'parents', 'coaching', 'expectations', 'isolate', 'alone', 'father', 'mother',
+      'teacher', 'society', 'comparisons', 'relative', 'peer pressure', 'lonely',
       'no friends', 'locked up', 'study room', 'pressure'
     ],
     distress: [
@@ -61,58 +61,58 @@ function startVisualizerLoop(analyser, dataArray, bufferLength) {
   const canvas = document.getElementById('audio-visualizer-canvas');
   if (!canvas) return;
   const canvasCtx = canvas.getContext('2d');
-  
+
   let animationId = null;
-  
+
   function draw() {
     animationId = requestAnimationFrame(draw);
-    
+
     analyser.getByteTimeDomainData(dataArray);
-    
+
     // Clear canvas with trail blur
     canvasCtx.fillStyle = 'rgba(10, 12, 22, 0.2)';
     canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-    
+
     // Draw center line if no active sounds are playing
     let activeSound = false;
-    for(let i=0; i<bufferLength; i++) {
-      if(Math.abs(dataArray[i] - 128) > 1) {
+    for (let i = 0; i < bufferLength; i++) {
+      if (Math.abs(dataArray[i] - 128) > 1) {
         activeSound = true;
         break;
       }
     }
-    
+
     canvasCtx.lineWidth = 3;
     const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#6474e6';
     canvasCtx.strokeStyle = primaryColor;
     canvasCtx.beginPath();
-    
+
     const sliceWidth = canvas.width * 1.0 / bufferLength;
     let x = 0;
-    
+
     for (let i = 0; i < bufferLength; i++) {
       let v = dataArray[i] / 128.0;
-      
+
       // If quiet, add a tiny mock micro-oscillation to represent peaceful presence
       if (!activeSound) {
         v += Math.sin(i * 0.15 + Date.now() * 0.002) * 0.015;
       }
-      
+
       const y = v * canvas.height / 2;
-      
+
       if (i === 0) {
         canvasCtx.moveTo(x, y);
       } else {
         canvasCtx.lineTo(x, y);
       }
-      
+
       x += sliceWidth;
     }
-    
+
     canvasCtx.lineTo(canvas.width, canvas.height / 2);
     canvasCtx.stroke();
   }
-  
+
   draw();
 }
 
@@ -141,21 +141,21 @@ class WellnessSynthManager {
   init() {
     if (this.ctx) return;
     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-    
+
     // Master Volume Node
     this.nodes.masterVolume = this.ctx.createGain();
     this.nodes.masterVolume.gain.value = parseFloat(document.getElementById('synth-volume').value) || 0.5;
-    
+
     // Analyser Node
     this.analyser = this.ctx.createAnalyser();
     this.analyser.fftSize = 128;
     this.analyserBufferLength = this.analyser.frequencyBinCount;
     this.analyserDataArray = new Uint8Array(this.analyserBufferLength);
-    
+
     // Connect master -> analyser -> destination
     this.nodes.masterVolume.connect(this.analyser);
     this.analyser.connect(this.ctx.destination);
-    
+
     startVisualizerLoop(this.analyser, this.analyserDataArray, this.analyserBufferLength);
   }
 
@@ -209,7 +209,7 @@ class WellnessSynthManager {
     if (pannerL && pannerR) {
       pannerL.pan.setValueAtTime(-1, this.ctx.currentTime);
       pannerR.pan.setValueAtTime(1, this.ctx.currentTime);
-      
+
       oscL.connect(gainL).connect(pannerL).connect(this.nodes.masterVolume);
       oscR.connect(gainR).connect(pannerR).connect(this.nodes.masterVolume);
     } else {
@@ -237,7 +237,7 @@ class WellnessSynthManager {
     const bufferSize = 4 * this.ctx.sampleRate;
     const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
     const output = noiseBuffer.getChannelData(0);
-    
+
     let lastOut = 0.0;
     for (let i = 0; i < bufferSize; i++) {
       const white = Math.random() * 2 - 1;
@@ -275,7 +275,7 @@ class WellnessSynthManager {
     const bufferSize = 4 * this.ctx.sampleRate;
     const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
     const output = noiseBuffer.getChannelData(0);
-    
+
     let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
     for (let i = 0; i < bufferSize; i++) {
       const white = Math.random() * 2 - 1;
@@ -311,7 +311,7 @@ class WellnessSynthManager {
 
   stopTrack(track) {
     if (!this.isPlaying[track]) return;
-    
+
     if (track === 'binaural' && this.sources.binaural) {
       this.sources.binaural.oscL.stop();
       this.sources.binaural.oscR.stop();
@@ -341,7 +341,7 @@ const AudioSynth = new WellnessSynthManager();
 // -------------------------------------------------------------
 function analyzeTextLogs(text, mood) {
   const cleanText = text.toLowerCase();
-  
+
   let matchCounts = {
     fatigue: 0,
     imposter: 0,
@@ -362,12 +362,12 @@ function analyzeTextLogs(text, mood) {
   // Calculate scores (0 to 100)
   // Scale factor: having 3 or more keywords signals high density (100%)
   const calculateScore = (count) => Math.min(100, Math.round((count / 3) * 100));
-  
+
   let fatigue = calculateScore(matchCounts.fatigue);
   let imposter = calculateScore(matchCounts.imposter);
   let anxiety = calculateScore(matchCounts.anxiety);
   let pressure = calculateScore(matchCounts.pressure);
-  
+
   // Adjust based on explicit mood logging
   if (mood === 'burntout') {
     fatigue = Math.max(fatigue, 80);
@@ -384,7 +384,7 @@ function analyzeTextLogs(text, mood) {
 
   // Final aggregate Burnout Risk Score
   const burnoutScore = Math.min(100, Math.round((fatigue * 0.35) + (anxiety * 0.3) + (imposter * 0.2) + (pressure * 0.15)));
-  
+
   // Safety Distress Crisis Trigger
   const isCrisis = matchCounts.distress > 0;
 
@@ -400,14 +400,14 @@ function analyzeTextLogs(text, mood) {
 // -------------------------------------------------------------
 function speakOutLoud(text) {
   if (!STATE.settings.ttsEnabled || !('speechSynthesis' in window)) return;
-  
+
   // Cancel previous speech playing
   window.speechSynthesis.cancel();
 
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.rate = STATE.settings.ttsSpeed;
   utterance.pitch = 1.0;
-  
+
   // Try to find a calming local system voice if available
   const voices = window.speechSynthesis.getVoices();
   const calmingVoice = voices.find(v => v.name.includes('Google US English') || v.name.includes('Natural') || v.lang === 'en-IN');
@@ -426,17 +426,17 @@ function updateStreakCount() {
   }
 
   // Sort logs by date ascending
-  const sorted = [...STATE.logs].sort((a,b) => new Date(a.date) - new Date(b.date));
+  const sorted = [...STATE.logs].sort((a, b) => new Date(a.date) - new Date(b.date));
   let tempStreak = 1;
-  
+
   for (let i = 1; i < sorted.length; i++) {
-    const prevDate = new Date(sorted[i-1].date);
+    const prevDate = new Date(sorted[i - 1].date);
     const currDate = new Date(sorted[i].date);
-    
+
     // Calculate difference in calendar days
-    const diffTime = Math.abs(currDate.setHours(0,0,0,0) - prevDate.setHours(0,0,0,0));
+    const diffTime = Math.abs(currDate.setHours(0, 0, 0, 0) - prevDate.setHours(0, 0, 0, 0));
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 1) {
       tempStreak++;
     } else if (diffDays > 1) {
@@ -444,7 +444,7 @@ function updateStreakCount() {
     }
     // if diffDays === 0, it means logged on same day, streak doesn't change
   }
-  
+
   STATE.streak = tempStreak;
 }
 
@@ -506,7 +506,7 @@ function checkAndUnlockBadges() {
 // -------------------------------------------------------------
 function getAuraResponse(userMsg, lastAnalysis = null) {
   const msg = userMsg.toLowerCase();
-  
+
   // Crisis keyword catch
   if (CONFIG.KEYWORDS.distress.some(w => msg.includes(w))) {
     showCrisisModal();
@@ -574,7 +574,7 @@ function drawWeeklyTrendChart() {
 
   // Grab last 7 logs, sort ascending
   const recentLogs = [...STATE.logs]
-    .sort((a,b) => new Date(a.date) - new Date(b.date))
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
     .slice(-7);
 
   const paddingX = 50;
@@ -593,7 +593,7 @@ function drawWeeklyTrendChart() {
 
   // Build SVG Path
   let pathD = `M ${points[0].x} ${points[0].y}`;
-  for(let i = 1; i < points.length; i++) {
+  for (let i = 1; i < points.length; i++) {
     pathD += ` L ${points[i].x} ${points[i].y}`;
   }
   chartLine.setAttribute('d', pathD);
@@ -601,7 +601,7 @@ function drawWeeklyTrendChart() {
   // Build point markers
   let pointsHTML = '';
   points.forEach(pt => {
-    const cleanDate = new Date(pt.date).toLocaleDateString(undefined, {month: 'short', day: 'numeric'});
+    const cleanDate = new Date(pt.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
     pointsHTML += `
       <g class="chart-point-group">
         <circle cx="${pt.x}" cy="${pt.y}" r="6" fill="var(--color-primary)" stroke="#fff" stroke-width="2"></circle>
@@ -621,9 +621,9 @@ function animateNumberValue(id, start, end, duration) {
   let current = start;
   const increment = end > start ? 1 : -1;
   const stepTime = Math.abs(Math.floor(duration / Math.max(1, range)));
-  
+
   obj.classList.add('count-up-glowing');
-  
+
   if (range === 0) {
     obj.textContent = `${end}%`;
     obj.classList.remove('count-up-glowing');
@@ -633,7 +633,7 @@ function animateNumberValue(id, start, end, duration) {
   const timer = setInterval(() => {
     current += increment;
     obj.textContent = `${current}%`;
-    
+
     if (current === end) {
       clearInterval(timer);
       obj.classList.remove('count-up-glowing');
@@ -664,7 +664,7 @@ function updateBurnoutGauge(burnoutScore) {
   // Calculate SVG circular stroke offset
   const circumference = 263.89; // 2 * PI * 42
   const offset = circumference - (burnoutScore / 100) * circumference;
-  
+
   // Animate the stroke offset smoothly
   fill.style.transition = 'stroke-dashoffset 0.8s cubic-bezier(0.1, 0.8, 0.2, 1)';
   fill.style.strokeDashoffset = offset;
@@ -739,7 +739,7 @@ function populateRecommendations(scores, aggregateBurnout) {
       <span>${rec.text}</span>
       <button class="rec-speak-btn" title="Speak advice out loud"><i class="fa-solid fa-volume-high"></i></button>
     `;
-    
+
     // Add text-to-speech button listener
     item.querySelector('.rec-speak-btn').addEventListener('click', (e) => {
       e.stopPropagation();
@@ -767,7 +767,7 @@ function renderJournalHistory() {
   }
 
   // Sort logs by date descending (latest first)
-  const sorted = [...STATE.logs].sort((a,b) => new Date(b.date) - new Date(a.date));
+  const sorted = [...STATE.logs].sort((a, b) => new Date(b.date) - new Date(a.date));
 
   sorted.forEach(log => {
     const dateStr = new Date(log.date).toLocaleString(undefined, {
@@ -790,7 +790,7 @@ function renderJournalHistory() {
       <div class="history-item-text" title="${escapeHtml(log.text)}">${escapeHtml(log.text || '(No journal text)')}</div>
       <span class="history-item-score-badge ${scoreColor}">${log.burnout}% Burnout Risk</span>
     `;
-    
+
     container.appendChild(item);
   });
 }
@@ -806,7 +806,7 @@ function showToast(msg, type = 'info') {
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
   toast.className = 'toast';
-  
+
   let icon = 'fa-info-circle text-accent-indigo';
   if (type === 'success') icon = 'fa-check-circle text-accent-sage';
   else if (type === 'warning') icon = 'fa-exclamation-triangle text-accent-amber';
@@ -814,7 +814,7 @@ function showToast(msg, type = 'info') {
 
   toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${msg}</span>`;
   container.appendChild(toast);
-  
+
   setTimeout(() => {
     toast.remove();
   }, 5000);
@@ -840,7 +840,7 @@ function startBreathingSession() {
     clearInterval(breathInterval);
     breathInterval = null;
     breathingSessionActive = false;
-    
+
     sphere.className = 'breath-sphere';
     ring.style.transform = 'scale(1)';
     stateTxt.textContent = 'Ready';
@@ -878,7 +878,7 @@ function startBreathingSession() {
 
   const executeCycle = () => {
     const config = getPhaseConfig(phase);
-    
+
     // Skip phases with 0 duration (like Holds in Equal Breathing)
     if (config.dur === 0) {
       phase = (phase + 1) % 4;
@@ -889,10 +889,10 @@ function startBreathingSession() {
     secondsLeft = config.dur;
     stateTxt.textContent = config.label;
     timerTxt.textContent = secondsLeft;
-    
+
     sphere.className = `breath-sphere ${config.cl}`;
     ring.style.transform = `scale(${config.scale})`;
-    
+
     if (isVoice) {
       speakOutLoud(config.label);
     }
@@ -922,7 +922,7 @@ function saveAppState() {
     prepStage: STATE.prepStage,
     settings: STATE.settings
   };
-  
+
   // Anonymization cleanup
   if (STATE.settings.anonymize) {
     localStorage.setItem('mindzen_user', 'Anonymous Scholar');
@@ -940,7 +940,7 @@ function loadAppState() {
   if (savedUser && savedState) {
     STATE.isLoggedIn = true;
     STATE.currentUser = savedUser;
-    
+
     try {
       const parsed = JSON.parse(savedState);
       STATE.streak = parsed.streak || 0;
@@ -948,10 +948,10 @@ function loadAppState() {
       STATE.activeExam = parsed.activeExam || 'UPSC';
       STATE.prepStage = parsed.prepStage || 'Mid Prep';
       STATE.settings = { ...STATE.settings, ...parsed.settings };
-    } catch(e) {
+    } catch (e) {
       console.error("Corrupted state, resetting options.", e);
     }
-    
+
     return true;
   }
   return false;
@@ -961,7 +961,7 @@ function purgeAllStorageMemory() {
   localStorage.removeItem('mindzen_user');
   localStorage.removeItem('mindzen_app_state');
   localStorage.removeItem('mindzen_breath_done');
-  
+
   // reset local state variables
   STATE.streak = 0;
   STATE.logs = [];
@@ -1067,7 +1067,7 @@ document.addEventListener('DOMContentLoaded', () => {
   navBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
       const targetView = btn.dataset.target;
-      
+
       // Update sidebar nav states
       navBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
@@ -1075,7 +1075,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Toggle views
       const panels = document.querySelectorAll('.view-panel');
       panels.forEach(p => p.classList.remove('active'));
-      
+
       const targetPanel = document.getElementById(targetView);
       targetPanel.classList.add('active');
 
@@ -1093,6 +1093,10 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       moodBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+
+      // Dynamic shift of ambient background colors based on mood
+      const mood = btn.dataset.mood;
+      applyMoodTheme(mood);
     });
   });
 
@@ -1114,14 +1118,14 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('analyze-journal-btn').addEventListener('click', () => {
     const text = journalInput.value.trim();
     const activeMoodBtn = document.querySelector('.mood-emojis-container .active');
-    
+
     if (!text && !activeMoodBtn) {
       showToast('Please select a mood or write in the journal before analyzing.', 'warning');
       return;
     }
 
     const currentMood = activeMoodBtn ? activeMoodBtn.dataset.mood : 'calm';
-    
+
     // Perform text metrics analysis
     const analysis = analyzeTextLogs(text, currentMood);
 
@@ -1148,26 +1152,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // UI Updates
     updateBurnoutGauge(analysis.burnout);
-    
-    // Render Bars
-    document.getElementById('val-fatigue').textContent = `${analysis.scores.fatigue}%`;
-    document.getElementById('fill-fatigue').style.width = `${analysis.scores.fatigue}%`;
 
-    document.getElementById('val-imposter').textContent = `${analysis.scores.imposter}%`;
-    document.getElementById('fill-imposter').style.width = `${analysis.scores.imposter}%`;
+    // Render Bars dynamically with counting and sliding animations
+    animateNumberValue('val-fatigue', 0, analysis.scores.fatigue, 600);
+    animateProgressBar('fill-fatigue', analysis.scores.fatigue, 600);
 
-    document.getElementById('val-anxiety').textContent = `${analysis.scores.anxiety}%`;
-    document.getElementById('fill-anxiety').style.width = `${analysis.scores.anxiety}%`;
+    animateNumberValue('val-imposter', 0, analysis.scores.imposter, 600);
+    animateProgressBar('fill-imposter', analysis.scores.imposter, 600);
 
-    document.getElementById('val-pressure').textContent = `${analysis.scores.pressure}%`;
-    document.getElementById('fill-pressure').style.width = `${analysis.scores.pressure}%`;
+    animateNumberValue('val-anxiety', 0, analysis.scores.anxiety, 600);
+    animateProgressBar('fill-anxiety', analysis.scores.anxiety, 600);
+
+    animateNumberValue('val-pressure', 0, analysis.scores.pressure, 600);
+    animateProgressBar('fill-pressure', analysis.scores.pressure, 600);
 
     // Populate dynamic advisor recommendations
     populateRecommendations(analysis.scores, analysis.burnout);
 
     // Update global dashboard statistics
     document.getElementById('streak-count-val').textContent = `${STATE.streak} days`;
-    
+
     // Add context to Chat Aura
     const chatbotBubble = getAuraResponse(`Analyzed logs: ${text}`, analysis);
     addChatBubble(chatbotBubble, 'aura');
@@ -1190,7 +1194,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       const response = getAuraResponse(text);
       addChatBubble(response, 'aura');
-      
+
       // Auto narration if enabled
       if (STATE.settings.ttsEnabled) {
         speakOutLoud(response);
@@ -1223,7 +1227,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bubble.className = `message ${sender === 'user' ? 'user-msg' : 'aura-msg'}`;
 
     const time = new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-    
+
     bubble.innerHTML = `
       <div class="msg-bubble">${escapeHtml(text)}</div>
       <span class="msg-time">${time}</span>
@@ -1267,7 +1271,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       const type = btn.dataset.synth;
       const card = btn.closest('.track-card');
-      
+
       let isPlaying = false;
       if (type === 'binaural') {
         isPlaying = AudioSynth.toggleBinaural();
@@ -1296,10 +1300,10 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       const nextStepNum = btn.dataset.next;
       const currentStep = btn.closest('.grounding-step');
-      
+
       currentStep.classList.remove('active');
       document.getElementById(`grounding-step-${nextStepNum}`).classList.add('active');
-      
+
       if (STATE.settings.ttsEnabled) {
         const nextTitle = document.querySelector(`#grounding-step-${nextStepNum} h4`).textContent;
         const nextDesc = document.querySelector(`#grounding-step-${nextStepNum} p`).textContent;
@@ -1422,13 +1426,17 @@ function initializeWorkspace() {
 
   // Load statistics details
   document.getElementById('streak-count-val').textContent = `${STATE.streak} days`;
-  
+
   // Refresh badges & history
   updateStreakCount();
   checkAndUnlockBadges();
 
   // Top statistics
   updateDashboardGlobalStats();
+
+  // Chatbot dynamic name greeting & grounding wizard input validators
+  initializeChatbotGreeting();
+  setupGroundingStepInputs();
 }
 
 function updateDashboardGlobalStats() {
@@ -1441,10 +1449,10 @@ function updateDashboardGlobalStats() {
 
     // Calculate dominant mood
     const moods = STATE.logs.map(l => l.mood);
-    const mode = moods.sort((a,b) =>
-          moods.filter(v => v===a).length - moods.filter(v => v===b).length
+    const mode = moods.sort((a, b) =>
+      moods.filter(v => v === a).length - moods.filter(v => v === b).length
     ).pop();
-    
+
     // Map emoji key to beautiful word
     const moodLabels = { calm: 'Calm🧘', excited: 'Focused⚡', tired: 'Exhausted🥱', stressed: 'Stressed😟', anxious: 'Anxious😰', burntout: 'Overwhelmed🥀' };
     document.getElementById('stat-dominant-mood').textContent = moodLabels[mode] || 'Balanced';
@@ -1456,7 +1464,114 @@ function updateDashboardGlobalStats() {
 
 // Hook state log savings back to global metrics
 const originSaveAppState = saveAppState;
-saveAppState = function() {
+saveAppState = function () {
   originSaveAppState();
   updateDashboardGlobalStats();
 };
+
+// -------------------------------------------------------------
+// XII. INTERACTIVE UTILITIES FOR DYNAMICS
+// -------------------------------------------------------------
+
+function applyMoodTheme(mood) {
+  const root = document.documentElement;
+  if (!root || STATE.settings.highContrast) return;
+
+  // Custom HSL themes mapping for ambient backdrop
+  const themes = {
+    calm: {
+      bg: 'radial-gradient(circle at 50% 50%, hsl(150, 30%, 12%) 0%, hsl(240, 25%, 5%) 100%)',
+      primary: 'hsl(150, 45%, 50%)',
+      primaryGlow: 'hsla(150, 45%, 50%, 0.3)'
+    },
+    excited: {
+      bg: 'radial-gradient(circle at 50% 50%, hsl(195, 40%, 12%) 0%, hsl(240, 25%, 5%) 100%)',
+      primary: 'hsl(195, 80%, 55%)',
+      primaryGlow: 'hsla(195, 80%, 55%, 0.3)'
+    },
+    tired: {
+      bg: 'radial-gradient(circle at 50% 50%, hsl(222, 20%, 11%) 0%, hsl(240, 25%, 5%) 100%)',
+      primary: 'hsl(215, 20%, 65%)',
+      primaryGlow: 'hsla(215, 20%, 65%, 0.3)'
+    },
+    stressed: {
+      bg: 'radial-gradient(circle at 50% 50%, hsl(35, 45%, 11%) 0%, hsl(240, 25%, 5%) 100%)',
+      primary: 'hsl(38, 92%, 58%)',
+      primaryGlow: 'hsla(38, 92%, 58%, 0.3)'
+    },
+    anxious: {
+      bg: 'radial-gradient(circle at 50% 50%, hsl(340, 35%, 12%) 0%, hsl(240, 25%, 5%) 100%)',
+      primary: 'hsl(355, 85%, 62%)',
+      primaryGlow: 'hsla(355, 85%, 62%, 0.3)'
+    },
+    burntout: {
+      bg: 'radial-gradient(circle at 50% 50%, hsl(280, 25%, 11%) 0%, hsl(240, 25%, 5%) 100%)',
+      primary: 'hsl(265, 60%, 55%)',
+      primaryGlow: 'hsla(265, 60%, 55%, 0.3)'
+    }
+  };
+
+  const selected = themes[mood];
+  if (selected) {
+    root.style.setProperty('--bg-app', selected.bg);
+    root.style.setProperty('--color-primary', selected.primary);
+    root.style.setProperty('--color-primary-glow', selected.primaryGlow);
+  }
+}
+
+function initializeChatbotGreeting() {
+  const area = document.getElementById('chat-messages-area');
+  if (!area) return;
+  area.innerHTML = '';
+
+  const name = STATE.settings.anonymize ? 'Scholar' : STATE.currentUser;
+  const exam = STATE.settings.anonymize ? 'your exam' : STATE.activeExam;
+
+  const msg = `Hello ${name}! I'm Aura, your wellness sanctuary. Preparing for the ${exam} can be exhausting, and it is entirely natural to feel the pressure. Feel free to talk to me about mock papers, syllabus worries, or ask for a box breathing cycle. How are you feeling today?`;
+
+  const bubble = document.createElement('div');
+  bubble.className = 'message aura-msg';
+  const time = new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+
+  bubble.innerHTML = `
+    <div class="msg-bubble">${msg}</div>
+    <span class="msg-time">${time}</span>
+  `;
+  area.appendChild(bubble);
+  area.scrollTop = area.scrollHeight;
+}
+
+function setupGroundingStepInputs() {
+  const steps = document.querySelectorAll('.grounding-step');
+
+  steps.forEach(step => {
+    const inputs = step.querySelectorAll('.gr-input');
+    const button = step.querySelector('.btn-next-step') || step.querySelector('#btn-finish-grounding');
+
+    if (inputs.length === 0 || !button) return;
+
+    // Reset state initially
+    button.disabled = true;
+    inputs.forEach(i => {
+      i.value = '';
+      i.classList.remove('valid-filled');
+    });
+
+    const checkInputs = () => {
+      let allFilled = true;
+      inputs.forEach(inp => {
+        if (!inp.value.trim()) {
+          allFilled = false;
+          inp.classList.remove('valid-filled');
+        } else {
+          inp.classList.add('valid-filled');
+        }
+      });
+      button.disabled = !allFilled;
+    };
+
+    inputs.forEach(inp => {
+      inp.addEventListener('input', checkInputs);
+    });
+  });
+}
